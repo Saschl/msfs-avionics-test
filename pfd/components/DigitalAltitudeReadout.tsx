@@ -56,7 +56,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     private mda = 0;
     private isNegativeSub = Subject.create('hidden')
     private colorSub = Subject.create('')
-    private showZeroSub = Subject.create(false);
+    private showZeroSub = Subject.create(true);
 
     private tenDigitsSub = Subject.create(0);
 
@@ -127,7 +127,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         this.tenThousandsPosition.set(TenThousandsPosition);
         const showThousandsZero = TenThousandsValue !== 0;
 
-        this.showZeroSub.set(showThousandsZero);
+       // this.showZeroSub.set(showThousandsZero);
 
         })
 

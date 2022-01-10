@@ -484,7 +484,7 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
     private addidionalTextSub = Subject.create('V/S');
 
 
-    private getText(activeVerticalMode: number) {
+    private getText(activeVerticalMode: number): boolean {
 
         let text: string;
         let additionalText: string = '';
@@ -616,6 +616,8 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
         this.inProtectionClassSub.set(inProtection ? 'PulseCyanFill' : 'Cyan');
 
         this.fmaTextRef.instance.innerHTML=`<tspan>${text}</tspan><tspan class=${inProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
+
+        return text.length > 0;
     }
 
     onAfterRender(node: VNode): void {
@@ -625,8 +627,12 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
         
         sub.on('activeVerticalMode').whenChanged().handle(activeVerticalModem => {
             this.activeVerticalModeSub.set(activeVerticalModem);
-            this.getText(activeVerticalModem);
-            this.displayModeChangedPath(10000);
+            const isShow = this.getText(activeVerticalModem);
+            if(isShow) {
+                this.displayModeChangedPath(10000);
+            } else {
+                this.displayModeChangedPath(0, true);
+            }
         })
 
         sub.on('ap_vs_selected').whenChanged().handle(svs => {
@@ -766,18 +772,28 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
 
         sub.on('activeLateralMode').whenChanged().handle(lm => {
             this.activeLateralMode = lm;
-            this.updateText(lm, this.activeVerticalMode);
-            this.displayModeChangedPath(10000);
+            const isShown = this.updateText(lm, this.activeVerticalMode);
+            if(isShown) {
+                this.displayModeChangedPath(10000);
+            } else {
+                this.displayModeChangedPath(0, true);
+
+            }
         });
 
         sub.on('activeVerticalMode').whenChanged().handle(lm => {
             this.activeVerticalMode = lm;
-            this.updateText(this.activeLateralMode, lm);
-            this.displayModeChangedPath(10000);
+            const isShown = this.updateText(this.activeLateralMode, lm);
+            if(isShown) {
+                this.displayModeChangedPath(10000);
+            } else {
+                this.displayModeChangedPath(0, true);
+
+            }
         });
     }
 
-    private updateText(activeLateralMode: number, activeVerticalMode: number) {
+    private updateText(activeLateralMode: number, activeVerticalMode: number): boolean {
 
         const armedVerticalBitmask = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_ARMED', 'number');
         const finalArmed = (armedVerticalBitmask >> 5) & 1;
@@ -818,6 +834,8 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
 
         this.textSub.set(text);
         this.idSub.set(id);
+
+        return text.length > 0;
     }
 
     render(): VNode {

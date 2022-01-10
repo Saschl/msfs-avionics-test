@@ -57,7 +57,6 @@ public onAfterRender(node: VNode): void {
 
     //this.updateState();
 
-    console.log("RENDER DONE");
 
     this.simvarPublisher.on('potentiometer_captain').whenChanged().handle(value => {
         this.potentiometer = value;
@@ -72,12 +71,16 @@ public onAfterRender(node: VNode): void {
     this.state.sub(v => {
         if(v === DisplayUnitState.Selftest) {
             this.selfTestRef.instance.setAttribute('visibility', 'visible');
+            this.pfdRef.instance.setAttribute('style', 'display:none');
+
+        } else if(v === DisplayUnitState.On) {
+            this.selfTestRef.instance.setAttribute('visibility', 'hidden');
+            this.pfdRef.instance.setAttribute('style', 'display:block');
         } else {
             this.selfTestRef.instance.setAttribute('visibility', 'hidden');
-            this.pfdRef.instance.setAttribute('visibility', 'visible');
-
+            this.pfdRef.instance.setAttribute('style', 'display:none');
         }
-    })
+    },true)
 
    
 } 
@@ -123,15 +126,13 @@ public onAfterRender(node: VNode): void {
            clearTimeout(this.timeOut);
         } else if (this.state.get() === DisplayUnitState.Off && (this.potentiometer !== 0 && this.electricityState !== 0 && !this.props.failed)) {
             this.state.set(DisplayUnitState.Selftest);
-            this.setTimer(15);
+            this.setTimer(1);
 
            // setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
         } else if (this.state.get() === DisplayUnitState.Selftest && (this.potentiometer === 0 || this.electricityState === 0)) {
             this.state.set(DisplayUnitState.Off);
             clearTimeout(this.timeOut);
         }
-        console.log(this.state);      
-
        
 
      }
@@ -163,7 +164,7 @@ public onAfterRender(node: VNode): void {
                     </svg>
                   
               
-                    <div style='block' ref={this.pfdRef} visibility='hidden'>{this.props.children}</div>
+                    <div style='display:none' ref={this.pfdRef}>{this.props.children}</div>
                     </>
               
             ); 

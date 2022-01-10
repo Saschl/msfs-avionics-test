@@ -83,15 +83,18 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
     private pitch = new Arinc429Word(0);
 
     private visibilitySub = Subject.create('hidden');
+    private failureVis = Subject.create('hidden');
 
-    private attExcessiveVisibilitySub = Subject.create('false');
+
+    private attExcessiveVisibilitySub = Subject.create('hidden');
 
 
     private updaetAttExcessive() {
         if (this.pitch.isNormalOperation() && ((this.pitch.value > 25 || this.pitch.value < -13)) || (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45)) {
             this.attExcessiveVisibilitySub.set('hidden');
         } else if (this.pitch.isNormalOperation() && -this.pitch.value < 22 && -this.pitch.value > -10 && this.roll.isNormalOperation() && Math.abs(this.roll.value) < 40) {
-            this.attExcessiveVisibilitySub.set('visible');        }
+            this.attExcessiveVisibilitySub.set('visible');        
+        }
     
     }
 
@@ -105,8 +108,10 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             this.roll = new Arinc429Word(r);
             if(!this.roll.isNormalOperation()){
                 this.visibilitySub.set('hidden');
+                this.failureVis.set('display:block');
             } else {
                 this.visibilitySub.set('visible');
+                this.failureVis.set('display:none');
             }
             this.updaetAttExcessive();
 
@@ -117,8 +122,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
             if(!this.pitch.isNormalOperation()){
                 this.visibilitySub.set('hidden');
+                this.failureVis.set('display:block');
+
             } else {
                 this.visibilitySub.set('visible');
+                this.failureVis.set('display:none');
+
 
             }
             this.updaetAttExcessive();
@@ -127,7 +136,9 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
     render(): VNode {
         return (
-            <g id="AttitudeSymbolsGroup">
+            <>
+            <text style={this.failureVis} id="AttFailText" class="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
+            <g id="AttitudeSymbolsGroup" visibility={this.visibilitySub}>
                 <path class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
                 <SidestickIndicator bus={this.props.bus} />
                 <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
@@ -148,6 +159,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
                     <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
                 </g>
             </g>
+            </>
         );
     }
     
@@ -174,7 +186,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
 
     private setOffset() {
         const offset = -Math.max(Math.min(this.fdYawCommand, 45), -45) * 0.44;
-        this.yawRef.instance.setAttribute('visibility', 'true');
+        this.yawRef.instance.setAttribute('visibility', 'visible');
         this.yawRef.instance.setAttribute('transform', `translate(${offset} 0)`);
     }
 
@@ -211,7 +223,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
             if(this.isActive()) {
                 this.setOffset()
             } else {
-                this.yawRef.instance.setAttribute('visibility', 'false')
+                this.yawRef.instance.setAttribute('visibility', 'hidden')
             }
         });
 
@@ -259,7 +271,12 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             this.lateralRef2.instance.setAttribute('visibility','visible');
             this.lateralRef2.instance.setAttribute('transform', `translate(${FDRollOffset} 0)`)
 
-        } 
+        } else {
+            this.lateralRef1.instance.setAttribute('visibility','hidden');
+            this.lateralRef2.instance.setAttribute('visibility','hidden');
+
+
+        }
     
         if (showVerticalFD) {
             const FDPitchOrder = this.fdPitch;
@@ -272,14 +289,18 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             this.verticalRef2.instance.setAttribute('transform',`translate(0 ${FDPitchOffset})`)
 
         
-        } 
+        } else {
+            this.verticalRef1.instance.setAttribute('visibility','hidden');
+            this.verticalRef2.instance.setAttribute('visibility','hidden');
+
+        }
     
     }
 
 
     private isActive(): boolean  {
         
-        if (!this.fdActive || !(this.lateralMode === 40 || this.lateralMode === 33 || this.lateralMode === 34) || SimVar.GetSimVarValue('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
+        if (!this.fdActive || SimVar.GetSimVarValue('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
             return false;
         } else {
             return true;
@@ -302,23 +323,23 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         }) */
         
         sub.on('activeLateralMode').whenChanged().handle(vm => {
-            this.verticalMode = vm;
+            this.lateralMode = vm;
    
             if(this.isActive()) {
-                this.fdRef.instance.setAttribute('visibility', 'visible')
+                this.fdRef.instance.removeAttribute('style')
             } else {
-                this.fdRef.instance.setAttribute('visibility', 'hidden')
+                this.fdRef.instance.setAttribute('style', 'display: none')
             }
 
         })
 
         sub.on('activeVerticalMode').whenChanged().handle(lm => {
-            this.lateralMode = lm;
+            this.verticalMode = lm;
    
             if(this.isActive()) {
-                this.fdRef.instance.setAttribute('visibility', 'visible')
+                this.fdRef.instance.removeAttribute('style')
             } else {
-                this.fdRef.instance.setAttribute('visibility', 'hidden')
+                this.fdRef.instance.setAttribute('style', 'display: none')
             }
 
         })
@@ -334,24 +355,24 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             }
         });
 
-        sub.on('fdBank').whenChanged().handle(fd => {
+        sub.on('fdBank').handle(fd => {
             this.fdBank = fd;
 
             if(this.isActive()) {
+                this.setOffset();
                 this.fdRef.instance.setAttribute('visibility', 'visible')
             } else {
                 this.fdRef.instance.setAttribute('visibility', 'hidden')
-                this.setOffset();
             }
         });
-        sub.on('fdPitch').whenChanged().handle(fd => {
+        sub.on('fdPitch').handle(fd => {
             this.fdPitch = fd;
 
             if(this.isActive()) {
+                this.setOffset();
                 this.fdRef.instance.setAttribute('visibility', 'visible')
             } else {
                 this.fdRef.instance.setAttribute('visibility', 'hidden')
-                this.setOffset();
             }
         });
 
@@ -364,7 +385,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
     
       
         return (
-            <g ref={this.fdRef}>
+            <g ref={this.fdRef} style="display: none">
                 <g class="ThickOutline">
                   
                          <path ref={this.lateralRef1} d="m68.903 61.672v38.302" />

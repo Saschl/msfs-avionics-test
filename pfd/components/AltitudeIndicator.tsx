@@ -157,6 +157,30 @@ class AltTapeBackground extends DisplayComponent<any> {
 }
 
 export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicatorOfftapeProps>  {
+
+    private abnormal = FSComponent.createRef<SVGGElement>();
+    private normal = FSComponent.createRef<SVGGElement>();
+
+
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        sub.on("altitude").handle(a => {
+            const altitude = new Arinc429Word(a);
+
+            if(!altitude.isNormalOperation()) {
+                this.normal.instance.setAttribute("style","display: none");
+                this.abnormal.instance.removeAttribute("style");
+            } else {
+                this.abnormal.instance.setAttribute("style","display: none");
+                this.normal.instance.removeAttribute("style");
+            }
+        })
+    }
+
     render(): VNode {
     
     return (
@@ -171,7 +195,13 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             );
         } */
 
-        <g>
+        <>
+             <g ref={this.abnormal} style="display: none">
+                    <path id="AltTapeOutline" class="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
+                    <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
+                    <text id="AltFailText" class="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>
+            </g>
+            <g ref={this.normal} style="display: none">
             <path id="AltTapeOutline" class="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
           {/*   <LinearDeviationIndicator altitude={altitude} linearDeviation={NaN} />
             <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
@@ -180,7 +210,8 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             <path id="AltReadoutBackground" class="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
             <RadioAltIndicator bus={this.props.bus} />
             <DigitalAltitudeReadout bus={this.props.bus} />
-        </g>
+            </g>
+        </>
     )
     
     }

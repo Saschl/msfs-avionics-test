@@ -85,7 +85,9 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('hasGlideslope');
         this.simVarPublisher.subscribe('glideSlopeError');
         this.simVarPublisher.subscribe('markerBeacon');
-
+        this.simVarPublisher.subscribe('v1');
+        this.simVarPublisher.subscribe('flightPhase');
+        this.simVarPublisher.subscribe('vr');
 
 
         this.simVarPublisher.startPublish();

@@ -1,2 +1,2 @@
 node_modules/
-.rollupt.cache
+.rollup.cache/**

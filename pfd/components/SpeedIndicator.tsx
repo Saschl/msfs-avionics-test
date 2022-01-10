@@ -29,7 +29,7 @@ class V1BugElement extends DisplayComponent<{bus: EventBus}> {
     
 
     private offsetSub = Subject.create('');
-    private visibilitySub = Subject.create('visible');
+    private visibilitySub = Subject.create('hidden');
 
 
     private flightPhase = 0;
@@ -51,9 +51,7 @@ class V1BugElement extends DisplayComponent<{bus: EventBus}> {
             this.flightPhase = this.flightPhase;
             this.getV1Visibility();
         })
-        
-        
-        
+          
     }
 
     private getV1Offset(){
@@ -83,9 +81,62 @@ class V1BugElement extends DisplayComponent<{bus: EventBus}> {
  
 }
 
-const VRBugElement = (offset: number) => (
-    <path id="RotateSpeedMarker" class="NormalStroke Cyan" transform={`translate(0 ${offset})`} d="m21.549 80.82a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />);
+class VRBugElement extends DisplayComponent<{bus: EventBus}> {
+    
 
+    private offsetSub = Subject.create('');
+    private visibilitySub = Subject.create('hidden');
+
+
+    private flightPhase = 0;
+    private vrSpeed = 0;
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const pf = this.props.bus.getSubscriber<PFDSimvars>();
+        
+        pf.on('vr').whenChanged().handle(g => {
+            this.vrSpeed = g;
+            this.getVrOffset();
+            this.getVrVisibility();
+
+        })
+
+        pf.on('flightPhase').whenChanged().handle(g => {
+            this.flightPhase = this.flightPhase;
+            this.getVrVisibility();
+        })
+          
+    }
+
+    private getVrOffset(){
+
+        const offset = -this.vrSpeed * DistanceSpacing / ValueSpacing;
+        this.offsetSub.set(`translate(0 ${offset})`);
+
+
+    }
+
+    private getVrVisibility() {
+        if(this.flightPhase <= 4 && this.vrSpeed !==0) {
+            this.visibilitySub.set('visible')
+        } else {
+            this.visibilitySub.set('hidden')
+        }
+
+    }
+
+    render(): VNode {
+        return (
+            <path visibility={this.visibilitySub} offset={this.offsetSub} id="RotateSpeedMarker" class="NormalStroke Cyan" d="m21.549 80.82a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />);
+    }
+ 
+}
+
+/* const VRBugElement = (offset: number) => (
+    <path id="RotateSpeedMarker" class="NormalStroke Cyan" transform={`translate(0 ${offset})`} d="m21.549 80.82a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />);
+ */
 const GreenDotBugElement = (offset: number) => (
     <g id="GreenDotSpeedMarker" transform={`translate(0 ${offset})`}>
         <path class="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />

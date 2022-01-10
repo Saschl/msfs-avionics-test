@@ -7,7 +7,7 @@ import {
     LagFilter,
 } from './PFDUtils';
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { PFDSimvars, PFDVars } from '../shared/PFDSimvarPublisher';
+import { PFDSimvars } from '../shared/PFDSimvarPublisher';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -62,22 +62,36 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
             const newVal = new Arinc429Word(pitch);
             //console.log(newVal.value);
-            this.pitchGroupRef.instance.setAttribute('transform',`translate(0 ${calculateHorizonOffsetFromPitch(-newVal.value)})`)
+
+            if(newVal.isNormalOperation()) {
+                this.pitchGroupRef.instance.setAttribute('style','display:block')
+
+                this.pitchGroupRef.instance.setAttribute('transform',`translate(0 ${calculateHorizonOffsetFromPitch(-newVal.value)})`)
+
+            } else {
+                this.pitchGroupRef.instance.setAttribute('style','display:none')
+            }
+
         });
 
         pf.on('roll').handle(roll => {
             const newVal = new Arinc429Word(roll);
+
+            if(newVal.isNormalOperation()) {
+                this.rollGroupRef.instance.setAttribute('style','display:block')
+
+                this.rollGroupRef.instance.setAttribute('transform',`rotate(${newVal.value} 68.814 80.730)`)
+            } else {
+                this.rollGroupRef.instance.setAttribute('style','display:none')
+            }
           
-            this.rollGroupRef.instance.setAttribute('transform',`rotate(${newVal.value} 68.814 80.730)`)
         })
 
     }
 
     render(): VNode {
-  /*       if (!this.props.pitch.get().isNormalOperation() || !this.props.roll.isNormalOperation()) {
-            return <></>;
-        }
-     */
+
+    
       /*   const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(-this.props.pitch.value), 31.563), -31.563); */
     
         const bugs: [number][] = [];
@@ -86,7 +100,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         }
     
         return (
-            <g id="RollGroup" ref={this.rollGroupRef}>
+            <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
                 <g id="PitchGroup" ref={this.pitchGroupRef}>
                     <path d="m23.906 80.823v-160h90v160z" class="SkyFill" />
                     <path d="m113.91 223.82h-90v-143h90z" class="EarthFill" />

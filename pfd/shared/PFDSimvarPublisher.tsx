@@ -45,6 +45,7 @@ import { Arinc429Word } from "./arinc429";
     fdBank: number,
     fdPitch: number,
     v1: number,
+    vr:number,
     flightPhase: number,
     hasLoc: boolean;
     hasDme: boolean;
@@ -99,6 +100,7 @@ import { Arinc429Word } from "./arinc429";
     fdBank = 'L:A32NX_FLIGHT_DIRECTOR_BANK',
     fdPitch = 'L:A32NX_FLIGHT_DIRECTOR_PITCH',
     v1 = 'L:AIRLINER_V1_SPEED',
+    vr = 'L:AIRLINER_VR_SPEED',
     flightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
     hasLoc = 'NAV HAS LOCALIZER:3',
     hasDme = 'NAV HAS DME:3',
@@ -154,17 +156,17 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
       ['fdYawCommand', { name: PFDVars.fdYawCommand, type: SimVarValueType.Number}],
       ['fdBank', { name: PFDVars.fdBank, type: SimVarValueType.Number}],
       ['fdPitch', { name: PFDVars.fdPitch, type: SimVarValueType.Number}],
-      ['v1', { name: PFDVars.v1, type: SimVarValueType.Number}],
+      ['v1', { name: PFDVars.v1, type: SimVarValueType.Knots}],
       ['flightPhase', { name: PFDVars.flightPhase, type: SimVarValueType.Number}],
 
       ['hasLoc', { name: PFDVars.hasLoc, type: SimVarValueType.Bool}],
       ['hasDme', { name: PFDVars.hasDme, type: SimVarValueType.Bool}],
 
-      ['navIdent', { name: PFDVars.flightPhase, type: SimVarValueType.String}],
+      ['navIdent', { name: PFDVars.navIdent, type: SimVarValueType.String}],
 
-      ['navFreq', { name: PFDVars.flightPhase, type: SimVarValueType.MHz}],
+      ['navFreq', { name: PFDVars.navFreq, type: SimVarValueType.MHz}],
 
-      ['dme', { name: PFDVars.dme, type: SimVarValueType.Number}],
+      ['dme', { name: PFDVars.dme, type: SimVarValueType.NM}],
 
       ['navRadialError', { name: PFDVars.navRadialError, type: SimVarValueType.Degree}],
 
@@ -173,6 +175,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
       ['glideSlopeError', { name: PFDVars.glideSlopeError, type: SimVarValueType.Degree}],
 
       ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Number}],
+      ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots}],
+
 
 
 
